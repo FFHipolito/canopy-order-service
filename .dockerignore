@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+rascunho
+.git
+.gitignore
+*.tsbuildinfo
+*.log
+.env

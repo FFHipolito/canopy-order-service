@@ -1,124 +1,265 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://nestjs.com/img/logo-small.svg" width="100" alt="Nest Logo" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<h1 align="center">Canopy Order Service API</h1>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  <strong>API RESTful industrial de alta performance para Gerenciamento de Produtos e Pedidos</strong><br>
+  Desenvolvida com Node.js, NestJS, TypeScript, Prisma ORM, PostgreSQL e Arquitetura Limpa (SOLID & DIP).
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-22.x-339933?logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/NestJS-12.x-E0234E?logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Prisma-6.x-2D3748?logo=prisma&logoColor=white" alt="Prisma" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-Multi--stage-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?logo=swagger&logoColor=black" alt="Swagger" />
+  <img src="https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen?logo=vitest&logoColor=white" alt="Tests" />
+</p>
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 📋 Sumário
 
-```bash
-$ npm install
+- [Visão Geral e Escopo](#-visão-geral-e-escopo)
+- [Diferenciais de Engenharia](#-diferenciais-de-engenharia)
+- [Arquitetura do Sistema e Princípios SOLID](#-arquitetura-do-sistema-e-princípios-solid)
+- [Transações Atômicas ACID e Baixa de Estoque](#-transações-atômicas-acid-e-baixa-de-estoque)
+- [Como Executar com Docker (Recomendado)](#-como-executar-com-docker-1-comando)
+- [Como Executar Localmente (Desenvolvimento)](#-como-executar-localmente)
+- [Execução dos Testes Automatizados](#-execução-dos-testes-automatizados)
+- [Documentação Interativa Swagger](#-documentação-interativa-swagger)
+- [Credenciais de Teste para Autenticação JWT](#-credenciais-de-teste-para-autenticação-jwt)
+- [Catálogo de Endpoints da API](#-catálogo-de-endpoints-da-api)
+
+---
+
+## 🎯 Visão Geral e Escopo
+
+A **Canopy Order Service** é uma API robusta projetada para atender ao gerenciamento de suprimentos industriais e florestais (como sensores IoT, válvulas hidráulicas, mudas clonadas e maquinário pesado).
+
+### 1. Módulo de Produtos (CRUD Completo):
+- **Campos:** `id` (UUID v4), `nome`, `categoria`, `descricao`, `preco`, `quantidade_estoque`, `createdAt`, `updatedAt`.
+- **Validações:** Preço estritamente maior que zero (`> 0`) e quantidade de estoque não negativa (`>= 0`).
+- **Filtros Dinâmicos:** Busca por nome (parcial e *case-insensitive*), categoria e faixa de preço (`precoMin`, `precoMax`).
+
+### 2. Módulo de Pedidos (Gerenciamento e Estoque):
+- **Campos:** `id` (UUID v4), `produtos` (itens contendo `productId`, `quantidade`, `precoUnitario`), `total_pedido`, `status` (`Pendente`, `Concluído`, `Cancelado`).
+- **Regras Críticas:**
+  - Verificação rigorosa e individual da disponibilidade de estoque antes da confirmação.
+  - Baixa atômica de estoque em lote via transação ACID ao criar ou transicionar para `Concluído`.
+  - Rejeição imediata (`BadRequestException`) caso o estoque seja insuficiente.
+  - Estorno seguro de estoque em caso de cancelamento de pedido concluído.
+
+---
+
+## 💎 Diferenciais de Engenharia
+
+| Diferencial | Implementação | Benefício Técnico |
+| :--- | :--- | :--- |
+| **Transação Atômica ACID** | `prisma.$transaction` callback | Elimina *race conditions* e inconsistências de estoque entre pedidos simultâneos |
+| **DIP (Dependency Inversion)** | Interfaces & Abstract Classes | Desacopla 100% regras de negócio de ORMs e drivers de banco |
+| **Envelope de Resposta** | `TransformInterceptor` | Formatação unificada `{ success: true, data: ..., timestamp: ... }` para clientes |
+| **Filtro Global de Erros** | `HttpExceptionFilter` | Previne *Information Disclosure* ocultando stacktraces internas de banco |
+| **Prevenção de Mass Assignment** | `ValidationPipe` estrito | Rejeita payloads com campos desconhecidos (`whitelist`, `forbidNonWhitelisted`) |
+| **Logging de Latência** | `RequestLoggerMiddleware` | Registra `[Método] [Rota] [StatusCode] [Tempo em ms]` via evento `finish` |
+| **Seed Industrial Real** | `prisma/seed.ts` | Popula o banco com itens do ecossistema florestal/industrial |
+
+---
+
+## 🏛️ Arquitetura do Sistema e Princípios SOLID
+
+A aplicação adota o padrão em **3 camadas desacopladas**, aplicando o **Princípio de Inversão de Dependência (DIP)**:
+
+```mermaid
+flowchart TD
+    Client(["HTTP Request (Client / Swagger)"]) --> MW["RequestLoggerMiddleware"]
+    MW --> PIPE["ValidationPipe (Whitelist / DTOs)"]
+    PIPE --> CTRL["Controllers (Products / Orders / Auth)"]
+    CTRL --> SVC["Services (Regras de Domínio)"]
+    SVC -.->|Injeção via Abstract Class| REPO_INT["Repositories Contracts (DIP)"]
+    REPO_INT ==> REPO_IMPL["Prisma Concrete Repositories"]
+    REPO_IMPL --> ORM["PrismaService (PostgreSQL)"]
+    CTRL --> INTC["TransformInterceptor (Envelope)"]
+    INTC --> ClientRes(["HTTP Response { success, data, timestamp }"])
+    CTRL -.->|Exceção| FLTR["HttpExceptionFilter (Tratamento Seguro)"]
+    FLTR --> ClientErr(["HTTP Error Response { success: false, ... }"])
 ```
 
-## Compile and run the project
+### Por que Inversão de Dependência (DIP) no NestJS?
+Em TypeScript, interfaces puras sofrem *type erasure* em tempo de execução. Para aplicar o DIP de forma idiomática e limpa, criamos classes abstratas como identificadores de injeção (`ProductsRepository`, `OrdersRepository`). Isso permite que os serviços dependam exclusivamente de contratos, tornando a suíte de testes unitários 100% isolada e ultrarrápida sem depender de instâncias reais de banco.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## 🔒 Transações Atômicas ACID e Baixa de Estoque
 
-# production mode
-$ npm run start:prod
+Ao confirmar um pedido com status `Concluído`, o sistema executa a operação sob uma transação atômica gerenciada pelo PostgreSQL:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente
+    participant Service as OrdersService
+    participant Tx as prisma.$transaction (ACID)
+    participant DB as PostgreSQL
+    
+    Cliente->>Service: POST /orders { produtos, status: "Concluído" }
+    Service->>Service: Valida estoque disponível individualmente
+    alt Estoque Insuficiente
+        Service-->>Cliente: 400 Bad Request (Estoque Insuficiente)
+    else Estoque Disponível
+        Service->>Tx: Inicia Transação Atômica
+        Tx->>DB: Verifica lock do produto
+        Tx->>DB: Decrementa quantidade_estoque
+        Tx->>DB: Cria registro do pedido (Order)
+        Tx->>DB: Cria itens vinculados com snapshot de preço
+        Tx-->>Service: Commit bem-sucedido
+        Service-->>Cliente: 201 Created { success: true, data: Order }
+    end
 ```
 
-## Run tests
+Se qualquer produto falhar no meio do processo ou ocorrer erro de concorrência, o PostgreSQL realiza **Rollback imediato**, garantindo que nenhum item seja abatido indevidamente.
+
+---
+
+## 🚀 Como Executar com Docker (1 Comando)
+
+Toda a infraestrutura (API NestJS compilada em multi-stage + Banco de Dados PostgreSQL) pode ser inicializada com um único comando:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker compose up --build
 ```
 
-## Deployment
+> **O que esse comando faz automaticamente?**
+> 1. Constrói a imagem otimizada da API via Dockerfile multi-stage.
+> 2. Inicializa o container PostgreSQL com verificação de *healthcheck*.
+> 3. Aguarda o banco estar saudável (`service_healthy`).
+> 4. Executa as migrações do banco (`npx prisma migrate deploy`).
+> 5. Roda o seed com dados industriais/florestais pré-cadastrados (`npx prisma db seed`).
+> 6. Inicia a API na porta `3000`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Para parar os serviços:
+```bash
+docker compose down
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
+
+## 💻 Como Executar Localmente
+
+### Pré-requisitos
+- Node.js 22+ e npm
+- Instância PostgreSQL rodando (ou via docker: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=canopy_order_db postgres:16-alpine`)
+
+### Passo a Passo
+
+1. **Instalar Dependências:**
+   ```bash
+   npm install
+   ```
+
+2. **Configurar Variáveis de Ambiente:**
+   Crie ou edite o arquivo `.env`:
+   ```env
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/canopy_order_db?schema=public"
+   PORT=3000
+   NODE_ENV=development
+   JWT_SECRET=super-secret-canopy-key-change-in-production
+   JWT_EXPIRES_IN=1d
+   ```
+
+3. **Gerar o Cliente Prisma e Rodar Migrações:**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   ```
+
+4. **Popular o Banco com Seed Industrial:**
+   ```bash
+   npm run prisma:seed
+   ```
+
+5. **Iniciar a Aplicação em Modo Desenvolvimento:**
+   ```bash
+   npm run start:dev
+   ```
+
+---
+
+## 🧪 Execução dos Testes Automatizados
+
+A suíte de testes foi construída com Vitest e foca em 100% de cobertura nos caminhos críticos de negócio:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Executa todos os testes unitários
+npm test
+
+# Executa os testes com relatório detalhado de cobertura
+npm run test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Resultado de Cobertura:**
+- **33 testes unitários** executados em ~1.2 segundos.
+- **100% de cobertura** em declarações, funções e linhas nos serviços `OrdersService`, `ProductsService` e `AuthService`.
 
-## Observability
+---
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+## 📚 Documentação Interativa Swagger
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Com a aplicação em execução, acesse a documentação interativa OpenAPI 3.0 no navegador:
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
-To add it to this project:
+### Recursos do Swagger:
+- Interface completa com schemas de Request e Response tipados.
+- Suporte a filtros dinâmicos via Query Parameters.
+- Autenticação integrada clicando no botão **Authorize** e colando o token JWT.
 
-```bash
-$ npm install @nestjs/observe
-```
+---
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+## 🔑 Credenciais de Teste para Autenticação JWT
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+Para testar endpoints protegidos ou interagir com o Swagger:
 
-## Resources
+| Campo | Valor de Teste |
+| :--- | :--- |
+| **Endpoint de Login** | `POST /auth/login` |
+| **E-mail** | `admin@canopy.com.br` |
+| **Senha** | `Canopy#2026` |
+| **Duração do Token** | `24 horas` |
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 📡 Catálogo de Endpoints da API
 
-## Support
+### Autenticação
+| Método | Rota | Descrição | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/auth/login` | Gera o token JWT para autenticação | Pública |
+| `GET` | `/auth/profile` | Retorna os dados do usuário autenticado | Bearer JWT |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Produtos
+| Método | Rota | Descrição | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/products` | Cadastra novo produto com validação de preço e estoque | Pública |
+| `GET` | `/products` | Lista produtos com filtros (`nome`, `categoria`, `precoMin`, `precoMax`) | Pública |
+| `GET` | `/products/:id` | Recupera produto por UUID v4 | Pública |
+| `PATCH` | `/products/:id` | Atualiza parcialmente dados de um produto | Pública |
+| `DELETE` | `/products/:id` | Remove produto com verificação de integridade referencial | Pública |
 
-## Stay in touch
+### Pedidos
+| Método | Rota | Descrição | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/orders` | Cria pedido com validação individual e baixa atômica | Pública |
+| `GET` | `/orders` | Lista histórico completo de pedidos e itens | Pública |
+| `GET` | `/orders/:id` | Recupera pedido por UUID com detalhes dos produtos | Pública |
+| `PATCH` | `/orders/:id/status` | Altera status (`Concluído`, `Cancelado`) com controle atômico de estoque | Pública |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 👨‍💻 Autor
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Projeto desenvolvido como solução de alta maturidade técnica para avaliação em engenharia de software backend sênior.

@@ -1,4 +1,4 @@
-import { PrismaClient, OrderStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -55,13 +55,13 @@ async function main() {
     },
   ];
 
-  console.log(Cadastrando  produtos de alta precisão industrial...);
+  console.log(`Cadastrando ${productsData.length} produtos de alta precisão industrial...`);
 
   for (const item of productsData) {
     const created = await prisma.product.create({
       data: item,
     });
-    console.log(✔ []  - R$  (Estoque: ));
+    console.log(`✔ [${created.categoria}] ${created.nome} - R$ ${created.preco} (Estoque: ${created.quantidade_estoque})`);
   }
 
   console.log('Seed industrial e florestal finalizado com sucesso!');
