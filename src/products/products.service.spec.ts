@@ -161,5 +161,14 @@ describe('ProductsService', () => {
         ConflictException,
       );
     });
+
+    it('deve relançar erro genérico se a exclusão falhar por outro motivo', async () => {
+      findByIdMock.mockResolvedValue(mockProduct);
+      deleteMock.mockRejectedValue(new Error('Falha de I/O no banco'));
+
+      await expect(service.delete(mockProduct.id)).rejects.toThrow(
+        'Falha de I/O no banco',
+      );
+    });
   });
 });

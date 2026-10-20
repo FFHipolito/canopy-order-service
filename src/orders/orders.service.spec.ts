@@ -150,6 +150,33 @@ describe('OrdersService', () => {
       expect(result).toEqual(mockOrder);
     });
 
+    it('deve consolidar itens duplicados com o mesmo productId no mesmo pedido', async () => {
+      const createDto: CreateOrderDto = {
+        produtos: [
+          { productId: mockProduct1.id, quantidade: 2 },
+          { productId: mockProduct1.id, quantidade: 3 }, // Total: 5 unidades de mockProduct1
+        ],
+      };
+
+      findByIdsProductsMock.mockResolvedValue([mockProduct1]);
+      createOrderInTransactionMock.mockResolvedValue(mockOrder);
+
+      await service.create(createDto);
+
+      expect(createOrderInTransactionMock).toHaveBeenCalledWith(
+        [
+          {
+            productId: mockProduct1.id,
+            quantidade: 5,
+            precoUnitario: mockProduct1.preco,
+          },
+        ],
+        new Prisma.Decimal(2250.0), // 5 * 450 = 2250
+        OrderStatus.PENDENTE,
+        false,
+      );
+    });
+
     it('deve rejeitar o pedido quando a quantidade solicitada exceder o estoque disponível', async () => {
       const createDto: CreateOrderDto = {
         produtos: [{ productId: mockProduct1.id, quantidade: 15 }], // Estoque é 10
@@ -199,7 +226,50 @@ describe('OrdersService', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('deve retornar lista completa de pedidos', async () => {
+      findAllOrdersMock.mockResolvedValue([mockOrder]);
+
+      const result = await service.findAll();
+
+      expect(findAllOrdersMock).toHaveBeenCalled();
+      expect(result).toEqual([mockOrder]);
+    });
+  });
+
+  describe('findById', () => {
+    it('deve retornar o pedido quando encontrado pelo ID', async () => {
+      findByIdOrderMock.mockResolvedValue(mockOrder);
+
+      const result = await service.findById(mockOrder.id);
+
+      expect(findByIdOrderMock).toHaveBeenCalledWith(mockOrder.id);
+      expect(result).toEqual(mockOrder);
+    });
+
+    it('deve lançar NotFoundException quando o pedido não existir', async () => {
+      findByIdOrderMock.mockResolvedValue(null);
+
+      await expect(service.findById('non-existent-order-id')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(findByIdOrderMock).toHaveBeenCalledWith('non-existent-order-id');
+    });
+  });
+
   describe('updateStatus', () => {
+    it('deve retornar o próprio pedido sem alterar se o status for idêntico (idempotência)', async () => {
+      findByIdOrderMock.mockResolvedValue(mockOrder); // Status PENDENTE
+
+      const result = await service.updateStatus(mockOrder.id, {
+        status: OrderStatus.PENDENTE,
+      });
+
+      expect(result).toEqual(mockOrder);
+      expect(completeOrderInTransactionMock).not.toHaveBeenCalled();
+      expect(cancelOrderInTransactionMock).not.toHaveBeenCalled();
+    });
+
     it('deve transicionar para CONCLUIDO e acionar baixa atômica via transação', async () => {
       findByIdOrderMock.mockResolvedValue(mockOrder);
       const completedOrder = { ...mockOrder, status: OrderStatus.CONCLUIDO };
@@ -255,6 +325,44 @@ describe('OrdersService', () => {
         false, // shouldRestock is false
       );
       expect(result.status).toBe(OrderStatus.CANCELADO);
+    });
+
+    it('deve rejeitar transição para PENDENTE caso o pedido já esteja CONCLUIDO', async () => {
+      const completedOrder = { ...mockOrder, status: OrderStatus.CONCLUIDO };
+      findByIdOrderMock.mockResolvedValue(completedOrder);
+
+      await expect(
+        service.updateStatus(mockOrder.id, { status: OrderStatus.PENDENTE }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(cancelOrderInTransactionMock).not.toHaveBeenCalled();
+    });
+
+    it('deve transicionar de CANCELADO para PENDENTE sem estorno', async () => {
+      const cancelledOrder = { ...mockOrder, status: OrderStatus.CANCELADO };
+      findByIdOrderMock.mockResolvedValue(cancelledOrder);
+      const pendingOrder = { ...mockOrder, status: OrderStatus.PENDENTE };
+      cancelOrderInTransactionMock.mockResolvedValue(pendingOrder);
+
+      const result = await service.updateStatus(mockOrder.id, {
+        status: OrderStatus.PENDENTE,
+      });
+
+      expect(cancelOrderInTransactionMock).toHaveBeenCalledWith(
+        cancelledOrder,
+        false,
+      );
+      expect(result.status).toBe(OrderStatus.PENDENTE);
+    });
+
+    it('deve rejeitar status desconhecido', async () => {
+      findByIdOrderMock.mockResolvedValue(mockOrder);
+
+      await expect(
+        service.updateStatus(mockOrder.id, {
+          status: 'STATUS_INEXISTENTE' as any,
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });
