@@ -1,0 +1,54 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum OrderStatus {
+  PENDENTE   @map("Pendente")
+  CONCLUIDO  @map("Concluído")
+  CANCELADO  @map("Cancelado")
+
+  @@map("order_status")
+}
+
+model Product {
+  id                 String      @id @default(uuid())
+  nome               String
+  categoria          String
+  descricao          String?
+  preco              Decimal     @db.Decimal(10, 2)
+  quantidade_estoque Int         @default(0)
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+  itensPedido        OrderItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  total_pedido Decimal     @default(0.00) @map("total_pedido") @db.Decimal(10, 2)
+  status       OrderStatus @default(PENDENTE)
+  produtos     OrderItem[]
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String   @id @default(uuid())
+  orderId       String   @map("order_id")
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String   @map("product_id")
+  product       Product  @relation(fields: [productId], references: [id])
+  quantidade    Int
+  precoUnitario Decimal  @map("preco_unitario") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("order_items")
+}
