@@ -17,6 +17,8 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Docker-Multi--stage-2496ED?logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?logo=swagger&logoColor=black" alt="Swagger" />
+  <img src="https://img.shields.io/badge/Postman-Collection%20v2.1-FF6C37?logo=postman&logoColor=white" alt="Postman" />
+  <a href="https://github.com/FFHipolito/canopy-order-service/actions/workflows/ci.yml"><img src="https://github.com/FFHipolito/canopy-order-service/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen?logo=vitest&logoColor=white" alt="Tests" />
 </p>
 
@@ -31,7 +33,8 @@
 - [Como Executar com Docker (Recomendado)](#-como-executar-com-docker-1-comando)
 - [Como Executar Localmente (Desenvolvimento)](#-como-executar-localmente)
 - [Execução dos Testes Automatizados](#-execução-dos-testes-automatizados)
-- [Documentação Interativa Swagger](#-documentação-interativa-swagger)
+- [Documentação da API (Swagger & Postman)](#-documentação-interativa-swagger--postman)
+- [Integração Contínua (CI/CD)](#-integração-contínua-cicd)
 - [Credenciais de Teste para Autenticação JWT](#-credenciais-de-teste-para-autenticação-jwt)
 - [Catálogo de Endpoints da API](#-catálogo-de-endpoints-da-api)
 
@@ -207,16 +210,35 @@ npm run test:cov
 
 ---
 
-## 📚 Documentação Interativa Swagger
+## 📚 Documentação Interativa (Swagger & Postman)
 
+### 1. Swagger OpenAPI 3.0 (Navegador)
 Com a aplicação em execução, acesse a documentação interativa OpenAPI 3.0 no navegador:
 
 👉 **[http://localhost:3000/api/docs](http://localhost:3000/api/docs)**
 
-### Recursos do Swagger:
-- Interface completa com schemas de Request e Response tipados.
-- Suporte a filtros dinâmicos via Query Parameters.
-- Autenticação integrada clicando no botão **Authorize** e colando o token JWT.
+- **Schemas completos**: visualização de modelos de entrada (DTOs) e payloads de resposta envelope.
+- **Autenticação integrada**: clique em **Authorize** e cole o token JWT gerado em `/auth/login`.
+
+### 2. Coleção Oficial do Postman
+Para testes rápidos via Postman, o repositório inclui uma coleção completa v2.1.0 pré-configurada:
+
+📁 Arquivo: [`postman/canopy-order-service.postman_collection.json`](postman/canopy-order-service.postman_collection.json)
+
+- **Test Scripts inclusos**: ao disparar `POST /auth/login`, o token JWT é capturado e gravado na variável `{{jwt_token}}` automaticamente.
+- **Encadeamento de IDs**: ao criar um produto ou pedido, o identificador retornado é salvo nas variáveis `{{productId}}` e `{{orderId}}` para uso imediato nas rotas subsequentes.
+
+---
+
+## ⚙️ Integração Contínua (CI/CD)
+
+O projeto conta com um pipeline automatizado de **GitHub Actions** em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executado a cada push ou pull request na branch `main`:
+
+1. **Instalação determinística**: `npm ci`
+2. **Geração de tipos do Prisma**: `npx prisma generate`
+3. **Análise estática (Linting)**: `npm run lint` com `oxlint`
+4. **Compilação TypeScript**: `npm run build` com `nest build`
+5. **Suíte de Testes Unitários**: `npm test` garantindo regressão zero
 
 ---
 
