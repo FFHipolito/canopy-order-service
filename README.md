@@ -259,7 +259,3 @@ Para testar endpoints protegidos ou interagir com o Swagger:
 | `PATCH` | `/orders/:id/status` | Altera status (`Concluído`, `Cancelado`) com controle atômico de estoque | Pública |
 
 ---
-
-## 👨‍💻 Autor
-
-Projeto desenvolvido como solução de alta maturidade técnica para avaliação em engenharia de software backend sênior.
