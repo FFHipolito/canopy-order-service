@@ -205,8 +205,8 @@ npm run test:cov
 ```
 
 **Resultado de Cobertura:**
-- **33 testes unitários** executados em ~1.2 segundos.
-- **100% de cobertura** em declarações, funções e linhas nos serviços `OrdersService`, `ProductsService` e `AuthService`.
+- **76 testes unitários** executados em 15 arquivos de teste (`vitest`).
+- **100% de cobertura** em declarações (`Stmts`), funções (`Funcs`) e linhas (`Lines`) cobrindo todas as camadas: Services, Controllers, Repositories, Guards, Interceptors, Filtros e Middlewares.
 
 ---
 
